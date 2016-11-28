@@ -1,0 +1,173 @@
+<html>
+	<head>
+		<script>
+			var Amount = 20000;
+			var dueAmount = 0;
+			
+			//System Placed Liens for Current Loan
+			var SYS_LINEN = [30000,30000,60000];
+			
+			//User Placed Liens for Current Loan
+			var USER_LINEN = [10000];
+			
+			//System Placed Liens for Other Loan
+			var OTHER_SLINEN = [10000,20000,10000,5000];
+			
+			var bestOption = [];
+			var best ="";
+			var f_SYS = "";
+			var f_ULIEN = "";
+			var f_OTHER_SLIEN = "";
+			var SUM_SLINEN = 0;
+			var SUM_ULINEN = 0;
+			var SUM_OTHERSLINEN = 0;
+			var UL_SCORE = 100;
+			var solutionStatus = false;
+			performSystemLineCheck();
+			var result_SLINEN = [];
+			var result_ULINEN = [];
+			var result_OTHERSLINEN = [];
+			var result = {};
+			
+			function performSystemLineCheck()
+			{
+				SYS_LINEN.forEach(getSum);
+				USER_LINEN.forEach(getUserSum);
+				OTHER_SLINEN.forEach(getOtherSum);
+				
+				//LIEN Amount Can be cleared using SYSTEM LIENS for Current Loan and User LIENS for Current Loan
+				if((SUM_SLINEN < Amount) && (SUM_SLINEN + SUM_ULINEN > Amount) )
+				{
+					
+					dueAmount = Amount - SUM_SLINEN;
+					console.log("LESS LINEN : "+dueAmount);
+					for(var i=1;i<= USER_LINEN.length; i++)
+					{
+						combine(USER_LINEN,i);
+					}
+					console.log("BEST OPTION : "+f_SYS + best);
+					result_SLINEN = f_SYS.split(" ");
+					result_SLINEN.length = result_SLINEN.length - 1;
+					result_ULINEN = best.split(" ");
+					result_ULINEN.length = result_ULINEN.length - 1;
+					result = {SYSLIEN_CURRENT : result_SLINEN, ULIEN_CURRENT : result_ULINEN, OTHER_SLINEN : []};
+					console.log(result);
+				}
+				//LIEN Amount Can be cleared using SYSTEM LIENS for Current Loan, USER LIENS for Current Loan and System LIENS placed for Other Loans
+				else if((SUM_SLINEN < Amount) && (SUM_SLINEN + SUM_ULINEN < Amount) && (SUM_SLINEN + SUM_ULINEN + SUM_OTHERSLINEN > Amount))
+				{
+					
+					dueAmount = Amount - (SUM_SLINEN+SUM_ULINEN);
+					for(var i=1;i<= OTHER_SLINEN.length; i++)
+					{
+						combine(OTHER_SLINEN,i);
+					}
+					console.log("BEST OPTION : "+f_SYS + f_ULIEN + best);
+					result_SLINEN = f_SYS.split(" ");
+					result_SLINEN.length = result_SLINEN.length - 1;
+					result_ULINEN = f_ULIEN.split(" ");
+					result_ULINEN.length = result_ULINEN.length - 1;
+					result_OTHERSLINEN = f_OTHER_SLIEN.split(" ");
+					result_OTHERSLINEN.length = result_OTHERSLINEN.length - 1;
+					result = {SYSLIEN_CURRENT : result_SLINEN, ULIEN_CURRENT : result_ULINEN, OTHER_SLINEN : result_OTHERSLINEN};
+					console.log(result);
+				}
+				//LIEN Amount Can be cleared using SYSTEM LIENS for Current Loan
+				else if(SUM_SLINEN > Amount)
+				{
+					dueAmount = Amount;
+					for(var i=1;i<= SYS_LINEN.length; i++)
+					{
+						combine(SYS_LINEN,i);
+					}
+					console.log("BEST OPTION : "+best);
+					result_SLINEN = best.split(" ");
+					result_SLINEN.length = result_SLINEN.length - 1;
+					result = {SYSLIEN_CURRENT : result_SLINEN, ULIEN_CURRENT : [], OTHER_SLINEN : []};
+					console.log(result);
+					
+				}
+				//LIEN Amount Cannot be cleared using any LIEN Amount
+				else if(SUM_SLINEN + SUM_ULINEN + SUM_OTHERSLINEN < Amount)
+				{
+					
+				}
+			}
+			
+			function getSum(item,index)
+			{
+				f_SYS += item + " ";
+				SUM_SLINEN += item;
+
+			}
+			
+			function getUserSum(item,index)
+			{
+				f_ULIEN += item + " ";
+				SUM_ULINEN += item;
+
+			}
+			
+			function getOtherSum(item,index)
+			{
+				f_OTHER_SLIEN += item + " ";
+				SUM_OTHERSLINEN += item;
+
+			}
+			
+			function combine(numbers,r)
+			{
+				doCombine(numbers,bestOption,0,0,r);	
+			}
+
+			function doCombine(arr,res,currIndex,level,r)
+			{
+				if(solutionStatus == false)
+				{
+					if(level == r)
+				{
+					printArray(res,dueAmount);
+					return;
+				}
+
+				for(var i = currIndex; i< arr.length; i++)
+				{
+					res[level] = arr[i];
+					doCombine(arr, res, i+1,level+1, r);
+					if( i< arr.length-1 && arr[i] == arr[i+1])
+					{
+						i++;
+					}
+				}
+				}
+				
+			}
+
+			function printArray(res,amount)
+			{
+				
+				var total = 0;
+				var Numbers="";
+				for(var i=0;i < res.length; i++)
+				{
+					total += res[i];
+					Numbers = Numbers + res[i] + " ";
+				}
+				var SCORE = (total/amount)*res.length;
+				if(SCORE < UL_SCORE && total>=amount)
+				{
+					UL_SCORE = SCORE;
+					best = Numbers;
+				}
+				
+				if(total == amount)
+				{
+					best = Numbers
+					solutionStatus = true;
+				}
+				
+			}
+		</script>
+		
+	</head>
+</html>
